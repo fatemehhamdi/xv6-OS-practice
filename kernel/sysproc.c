@@ -108,27 +108,90 @@ sys_uptime(void)
   return xticks;
 }
 
+const char *proc_states[] = {
+  [UNUSED]    "Unused",
+  [USED]      "Used",
+  [SLEEPING]  "Sleeping",
+  [RUNNABLE]  "Runnable",
+  [RUNNING]   "Running",
+  [ZOMBIE]    "Zombie"
+};
+
+extern struct proc proc[NPROC];
+extern struct spinlock proc_lock;
+
 uint64
 sys_top(void)
 {
   struct proc *p;
   extern struct proc proc[NPROC];
   
-  printf("---\t-------\t\t ----------------------\n");
+  printf("PID\tName\t\tSize\t\tState\n");
+  printf("---\t----\t\t----\t\t-----\n");
   
   for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
-    if(p->state != UNUSED){
+    if(p->state == SLEEPING || p->state == RUNNABLE || p->state == RUNNING || p->state == ZOMBIE){
       printf("%d\t%s", p->pid, p->name);
       
       int len = strlen(p->name);
       if(len < 8)
-        printf("\t\t%lu\n", p->sz);
+        printf("\t\t%lu\t\t%s\n", p->sz, proc_states[p->state]);
       else
-        printf("\t%lu\n", p->sz);
+        printf("\t%lu\t\t%s\n", p->sz, proc_states[p->state]);
     }
     release(&p->lock);
   }
   
+  return 0;
+}
+
+uint64
+sys_next_process(void)
+{
+  int before_pid;
+  uint64 p_data_addr;
+  struct proc *p;
+  int search_started = 0;
+
+  argint(0, &before_pid);
+  argaddr(1, &p_data_addr);
+  
+  if (before_pid == -1) {
+    search_started = 1;
+  }
+
+  for (p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+
+    if (p->state == UNUSED) {
+      release(&p->lock);
+      continue;
+    }
+
+    if (search_started) {
+      struct process_data data;
+      data.pid = p->pid;
+      data.parent_id = p->parent ? p->parent->pid : 1;
+      data.size = p->sz;
+      data.state = p->state;
+      safestrcpy(data.name, p->name, sizeof(data.name));
+
+      release(&p->lock);
+
+      if (copyout(myproc()->pagetable, p_data_addr, (char *)&data, sizeof(data)) < 0) {
+        return 0;
+      }
+      
+      return p->pid;
+    }
+
+    if (p->pid == before_pid) {
+      search_started = 1;
+    }
+    
+    release(&p->lock);
+  }
+
   return 0;
 }

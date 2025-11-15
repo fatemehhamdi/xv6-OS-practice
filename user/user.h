@@ -2,6 +2,18 @@
 #define SBRK_ERROR ((char *)-1)
 
 struct stat;
+struct rtcdate;
+
+
+enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+
+struct process_data {
+  int pid;
+  int parent_id;
+  int size;
+  enum procstate state;
+  char name[16];
+};
 
 // system calls
 int fork(void);
@@ -26,6 +38,7 @@ char* sys_sbrk(int,int);
 int pause(int);
 int uptime(void);
 int top(void);
+int next_process(int before_pid, struct process_data* proc);
 
 // ulib.c
 int stat(const char*, struct stat*);

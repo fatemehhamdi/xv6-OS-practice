@@ -145,6 +145,7 @@ UPROGS=\
 	$U/_dorphan\
 	$U/_helloworld\
 	$U/_top\
+	$U/_treetest\
 
 
 fs.img: mkfs/mkfs README $(UPROGS)

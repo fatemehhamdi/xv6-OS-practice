@@ -110,3 +110,8 @@ top:
  li a7, SYS_top
  ecall
  ret
+.global next_process
+next_process:
+ li a7, SYS_next_process
+ ecall
+ ret

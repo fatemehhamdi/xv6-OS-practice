@@ -43,7 +43,7 @@ forktest(void)
   int n, pid;
 
   print("fork test\n");
-  34:	6d000513          	li	a0,1744
+  34:	6d800513          	li	a0,1752
   38:	fc9ff0ef          	jal	0 <print>
 
   for(n=0; n<N; n++){
@@ -84,7 +84,7 @@ forktest(void)
   8a:	3e800793          	li	a5,1000
   8e:	02f71b63          	bne	a4,a5,c4 <forktest+0x98>
     print("fork claimed to work N times!\n");
-  92:	6e000513          	li	a0,1760
+  92:	6e800513          	li	a0,1768
   96:	f6bff0ef          	jal	0 <print>
     exit(1);
   9a:	4505                	li	a0,1
@@ -98,7 +98,7 @@ forktest(void)
   a6:	87aa                	mv	a5,a0
   a8:	0007d963          	bgez	a5,ba <forktest+0x8e>
       print("wait stopped early\n");
-  ac:	70000513          	li	a0,1792
+  ac:	70800513          	li	a0,1800
   b0:	f51ff0ef          	jal	0 <print>
       exit(1);
   b4:	4505                	li	a0,1
@@ -121,7 +121,7 @@ forktest(void)
   d8:	57fd                	li	a5,-1
   da:	00f70963          	beq	a4,a5,ec <forktest+0xc0>
     print("wait got too many\n");
-  de:	71800513          	li	a0,1816
+  de:	72000513          	li	a0,1824
   e2:	f1fff0ef          	jal	0 <print>
     exit(1);
   e6:	4505                	li	a0,1
@@ -129,7 +129,7 @@ forktest(void)
   }
 
   print("fork test OK\n");
-  ec:	73000513          	li	a0,1840
+  ec:	73800513          	li	a0,1848
   f0:	f11ff0ef          	jal	0 <print>
 }
   f4:	0001                	nop
@@ -995,3 +995,13 @@ top:
  6ca:	00000073          	ecall
  ret
  6ce:	8082                	ret
+
+00000000000006d0 <next_process>:
+.global next_process
+next_process:
+ li a7, SYS_next_process
+ 6d0:	48dd                	li	a7,23
+ ecall
+ 6d2:	00000073          	ecall
+ ret
+ 6d6:	8082                	ret
